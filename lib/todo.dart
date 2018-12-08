@@ -12,10 +12,10 @@ class Todo{
     this.completed = false,
   });
 
-  Todo.fromMap(Map<String, dynamic> json)
-      : id = json['id'],
-        title = json['title'],
-        completed = json['completed'];
+  Todo.fromMap(Map<String, dynamic> map)
+      : id = map['id'],
+        title = map['title'],
+        completed = map['completed'];
 
   Map toMap(){
     return {
