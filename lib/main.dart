@@ -171,6 +171,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
             (listItem) => item.id == listItem.id
           ).completed = !item.completed;
         });
+        _saveData();
       },
     );
   }
@@ -199,8 +200,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
         setState(() {
           _items.firstWhere((listItem) => listItem.id == item.id).title = title;
         });
+        _saveData();
       }
-      _saveData();
     });
   }
 
