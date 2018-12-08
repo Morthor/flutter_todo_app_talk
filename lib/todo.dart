@@ -1,9 +1,7 @@
-import 'dart:math';
-
-Random randomSeed = new Random(1);
+import 'package:uuid/uuid.dart';
 
 class Todo{
-  int id = randomSeed.nextInt(9999999);
+  String id = new Uuid().v1();
   String title;
   bool completed;
 
@@ -13,9 +11,9 @@ class Todo{
   });
 
   Todo.fromMap(Map<String, dynamic> map)
-      : id = map['id'],
-        title = map['title'],
-        completed = map['completed'];
+    : id = map['id'].toString(),
+      title = map['title'],
+      completed = map['completed'];
 
   Map toMap(){
     return {

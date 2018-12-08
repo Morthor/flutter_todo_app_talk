@@ -30,7 +30,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
   List<Todo> _items = new List<Todo>();
   GlobalKey<AnimatedListState> animatedListKey
     = new GlobalKey<AnimatedListState>();
-  AnimationController noItemsAC;
+  AnimationController noItemsController;
   SharedPreferences sharedPreferences;
 
   @override
@@ -38,7 +38,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
     // TODO: implement initState
     super.initState();
     _loadData();
-    noItemsAC = new AnimationController(
+    noItemsController = new AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 300)
     );
@@ -67,7 +67,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
 
   @override
   Widget build(BuildContext context) {
-    _items.length == 0 ? noItemsAC.forward() : noItemsAC.reset();
+    _items.length == 0 ? noItemsController.forward() : noItemsController.reset();
     return Scaffold(
       appBar: AppBar(
         title: Text('Todo App'),
@@ -88,7 +88,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
   
   Widget emptyList(){
     return FadeTransition(
-      opacity: noItemsAC,
+      opacity: noItemsController,
       child: Center(
       child:  Text('No items')
       ),
