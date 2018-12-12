@@ -1,6 +1,6 @@
 # A Flutter To-do App
 
-This project is part of talk introducing Flutter to new developers.
+This project is part of a talk introducing Flutter to new developers.
 
 ## Requirements
 - List of items
