@@ -23,9 +23,12 @@ class _NewTodoState extends State<NewTodo> {
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       appBar: AppBar(
-        title: Text('New todo'),
+        title: Text(
+          'New todo',
+          key: Key('new-item-title'),
+        ),
         centerTitle: true,
       ),
       body: Padding(

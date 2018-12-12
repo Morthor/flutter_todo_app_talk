@@ -12,7 +12,7 @@ class Main extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Todo App',
+      title: 'FlutterTodo',
       home: Home(),
       theme: ThemeData(
         primarySwatch: Colors.teal,
@@ -23,11 +23,11 @@ class Main extends StatelessWidget {
 
 class Home extends StatefulWidget {
   @override
-  _HomeState createState() => _HomeState();
+  HomeState createState() => HomeState();
 }
 
-class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
-  List<Todo> _items = new List<Todo>();
+class HomeState extends State<Home> with SingleTickerProviderStateMixin{
+  List<Todo> items = new List<Todo>();
   GlobalKey<AnimatedListState> animatedListKey
     = new GlobalKey<AnimatedListState>();
   AnimationController noItemsController;
@@ -44,13 +44,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
     );
   }
 
+  @override
+  void dispose(){
+    noItemsController.dispose();
+    super.dispose();
+  }
+
   _loadData() async {
     sharedPreferences = await SharedPreferences.getInstance();
     List<String> stringList = sharedPreferences.getStringList('data');
     setState(() {
       if(stringList != null) {
         stringList.forEach((string) {
-          _items.add(Todo.fromMap(json.decode(string)));
+          items.add(Todo.fromMap(json.decode(string)));
         });
       }
     });
@@ -59,7 +65,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
   _saveData() async {
     sharedPreferences = await SharedPreferences.getInstance();
     List<String> stringList = new List<String>();
-    _items.forEach((Todo item){
+    items.forEach((Todo item){
       stringList.add(json.encode(item.toMap()));
     });
     sharedPreferences.setStringList('data', stringList);
@@ -67,20 +73,23 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
 
   @override
   Widget build(BuildContext context) {
-    _items.length == 0 ? noItemsController.forward() : noItemsController.reset();
+    items.length == 0 ? noItemsController.forward() : noItemsController.reset();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Todo App'),
+        title: Text(
+          'FlutterTodo',
+          key: Key('main-app-title'),
+        ),
         centerTitle: true,
       ),
       floatingActionButton: Hero(
         tag: 'save-button',
         child: FloatingActionButton(
           child: Icon(Icons.add),
-          onPressed: () =>_newItemView(),
+          onPressed: () =>goToNewItemView(),
         ),
       ),
-      body: _items.length > 0
+      body: items.length > 0
         ? buildListView()
         : emptyList()
     );
@@ -98,20 +107,20 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
   Widget buildListView() {
     return AnimatedList(
       key: animatedListKey,
-      initialItemCount: _items.length,
+      initialItemCount: items.length,
       itemBuilder: (BuildContext context,int index, animation){
         return FadeTransition(
           opacity: animation,
           child: SizeTransition(
             sizeFactor: animation,
-            child: buildItem(_items[index])
+            child: buildItem(items[index], index)
           ),
         );
       },
     );
   }
 
-  Widget buildItem(Todo item){
+  Widget buildItem(Todo item, index){
     return Dismissible(
       key: Key('${item.id}'),
       background: Stack(
@@ -147,73 +156,76 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
       onDismissed: (direction) => _removeItem(item),
       direction: DismissDirection.startToEnd,
       child: ListTile(
-        onTap: () => _editItem(item),
+        onTap: () => _changeItemCompleteness(item),
         title: Text(
           item.title,
+          key: Key('item-$index'),
           style: TextStyle(
             color: item.completed ? Colors.grey : Colors.black,
             decoration: item.completed ? TextDecoration.lineThrough : null
           ),
         ),
-        trailing: completedButton(item),
+        trailing: IconButton(
+          key: Key('edit-item'),
+          icon: Icon(Icons.edit),
+          onPressed: () => goToEditItemView(item),
+        ),
       ),
     );
   }
 
-  Widget completedButton(item){
-    return IconButton(
-      icon: Icon(
-        item.completed ? Icons.check_box : Icons.check_box_outline_blank
-      ),
-      onPressed: () {
-        setState(() {
-          _items.firstWhere(
-            (listItem) => item.id == listItem.id
-          ).completed = !item.completed;
-        });
-        _saveData();
-      },
-    );
+  void _changeItemCompleteness(item){
+    setState(() {
+      items.firstWhere(
+              (listItem) => item.id == listItem.id
+      ).completed = !item.completed;
+    });
   }
 
-  void _newItemView(){
+  void goToNewItemView(){
     Navigator.of(context).push(MaterialPageRoute(builder: (context){
       return NewTodo();
     })).then((title){
       if(title != null) {
-        setState(() {
-          _items.insert(0, Todo(title: title));
-        });
-        if(animatedListKey.currentState != null){
-          animatedListKey.currentState.insertItem(0);
-        }
-      }
-      _saveData();
-    });
-  }
-
-  void _editItem(item){
-    Navigator.of(context).push(MaterialPageRoute(builder: (context){
-      return NewTodo(item: item);
-    })).then((title){
-      if(title != null) {
-        setState(() {
-          _items.firstWhere((listItem) => listItem.id == item.id).title = title;
-        });
+        addItem(title);
         _saveData();
       }
     });
   }
 
+  void addItem(title){
+    items.insert(0, Todo(title: title));
+    if(animatedListKey.currentState != null){
+      animatedListKey.currentState.insertItem(0);
+    }
+  }
+
+  void goToEditItemView(item){
+    Navigator.of(context).push(MaterialPageRoute(builder: (context){
+      return NewTodo(item: item);
+    })).then((title){
+      if(title != null) {
+        editItem(item, title);
+        _saveData();
+      }
+    });
+  }
+
+  void editItem(item, title){
+    items.firstWhere((listItem) => listItem.id == item.id).title = title;
+  }
+
   void _removeItem(item) {
     animatedListKey.currentState.removeItem(
-      _items.indexOf(item), (context, animation){
+      items.indexOf(item), (context, animation){
         return SizedBox();
       }
     );
-    setState(() {
-      _items.remove(_items.firstWhere((listItem) => listItem.id == item.id));
-    });
+    deleteItem(item);
     _saveData();
+  }
+
+  void deleteItem(item){
+    items.remove(items.firstWhere((listItem) => listItem.id == item.id));
   }
 }
