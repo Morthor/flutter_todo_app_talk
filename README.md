@@ -2,9 +2,16 @@
 
 This project is part of talk introducing Flutter to new developers.
 
+## Requirements
 - List of items
-- Adding
-- Removing
-- Editing
-- Animations
+- Adding items
+- Removing items
+- Editing items
 - Data persistence
+
+## Includes
+- Animated list
+- Shared Preferences
+- Unit tests
+- Widget tests
+- Integration (automation) tests
