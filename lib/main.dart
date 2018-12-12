@@ -1,10 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:todo_app1/new_todo.dart';
 import 'package:todo_app1/todo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 
 void main() => runApp(Main());
 
@@ -15,7 +13,7 @@ class Main extends StatelessWidget {
       title: 'FlutterTodo',
       home: Home(),
       theme: ThemeData(
-        primarySwatch: Colors.teal,
+        primarySwatch: Colors.orange,
       ),
     );
   }
@@ -32,33 +30,43 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
     = new GlobalKey<AnimatedListState>();
   AnimationController noItemsController;
   SharedPreferences sharedPreferences;
+  bool loading = true;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _loadData();
     noItemsController = new AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 300)
+      duration: Duration(milliseconds: 500),
     );
   }
 
   @override
   void dispose(){
+    // Dispose of the animation to avoid leaks
     noItemsController.dispose();
     super.dispose();
   }
 
   _loadData() async {
+    setState(() {
+      loading = true;
+    });
     sharedPreferences = await SharedPreferences.getInstance();
     List<String> stringList = sharedPreferences.getStringList('data');
+    if(stringList != null && stringList.length > 0) {
+      setState(() {
+        items.addAll(stringList.map((String item) {
+          return Todo.fromMap(json.decode(item));
+        }));
+      });
+      noItemsController.reset();
+    } else {
+      noItemsController.forward();
+    }
     setState(() {
-      if(stringList != null) {
-        stringList.forEach((string) {
-          items.add(Todo.fromMap(json.decode(string)));
-        });
-      }
+      loading = false;
     });
   }
 
@@ -73,7 +81,6 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
 
   @override
   Widget build(BuildContext context) {
-    items.length == 0 ? noItemsController.forward() : noItemsController.reset();
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -89,10 +96,18 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
           onPressed: () =>goToNewItemView(),
         ),
       ),
-      body: items.length > 0
-        ? buildListView()
-        : emptyList()
+      body: renderBody()
     );
+  }
+
+  Widget renderBody(){
+    if(loading){
+      return loadingScreen();
+    }else if(items.length > 0){
+      return buildListView();
+    }else{
+      return emptyList();
+    }
   }
   
   Widget emptyList(){
@@ -101,6 +116,12 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
       child: Center(
       child:  Text('No items')
       ),
+    );
+  }
+
+  Widget loadingScreen(){
+    return Center(
+      child: CircularProgressIndicator(),
     );
   }
 
@@ -153,10 +174,10 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
           ),
         ],
       ),
-      onDismissed: (direction) => _removeItem(item),
+      onDismissed: (direction) => _removeItemFromList(item),
       direction: DismissDirection.startToEnd,
       child: ListTile(
-        onTap: () => _changeItemCompleteness(item),
+        onTap: () => changeItemCompleteness(item),
         title: Text(
           item.title,
           key: Key('item-$index'),
@@ -174,11 +195,9 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
     );
   }
 
-  void _changeItemCompleteness(item){
+  void changeItemCompleteness(Todo item){
     setState(() {
-      items.firstWhere(
-              (listItem) => item.id == listItem.id
-      ).completed = !item.completed;
+      item.completed = !item.completed;
     });
   }
 
@@ -211,21 +230,29 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
     });
   }
 
-  void editItem(item, title){
-    items.firstWhere((listItem) => listItem.id == item.id).title = title;
+  void editItem(Todo item ,String title){
+    item.title = title;
   }
 
-  void _removeItem(item) {
+  void _removeItemFromList(item) {
     animatedListKey.currentState.removeItem(
       items.indexOf(item), (context, animation){
         return SizedBox();
       }
     );
     deleteItem(item);
+    if(items.length == 0) {
+      // force redraw of main view if the list is now empty
+      setState(() {
+        noItemsController.forward();
+      });
+    } else{
+      noItemsController.reset();
+    }
     _saveData();
   }
 
   void deleteItem(item){
-    items.remove(items.firstWhere((listItem) => listItem.id == item.id));
+    items.remove(item);
   }
 }

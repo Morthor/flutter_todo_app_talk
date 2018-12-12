@@ -15,7 +15,9 @@ void main() {
 
   group('Starting app:', () {
     final appTitle = find.byValueKey('main-app-title');
-    test('App starts and shows the main view', () async {
+
+    test('App starts and shows the main view after the progress indicator dissapears', () async {
+      await driver.waitForAbsent(find.byType('CircularProgressIndicator'));
       expect(await driver.getText(appTitle), "FlutterTodo",);
     });
   });
