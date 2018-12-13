@@ -178,6 +178,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
       direction: DismissDirection.startToEnd,
       child: ListTile(
         onTap: () => changeItemCompleteness(item),
+        onLongPress: () => goToEditItemView(item),
         title: Text(
           item.title,
           key: Key('item-$index'),
@@ -186,11 +187,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
             decoration: item.completed ? TextDecoration.lineThrough : null
           ),
         ),
-        trailing: IconButton(
-          key: Key('edit-item'),
-          icon: Icon(Icons.edit),
-          onPressed: () => goToEditItemView(item),
-        ),
+        trailing: Icon(item.completed ? Icons.check_box : Icons.check_box_outline_blank),
       ),
     );
   }
