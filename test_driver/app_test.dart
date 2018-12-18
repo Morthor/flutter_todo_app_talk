@@ -42,10 +42,25 @@ void main() {
       expect(await driver.getText(find.byValueKey('item-0')), itemTitle);
     });
 
+    test('Set item as completed', () async {
+      final item = find.byValueKey('item-0');
+      RenderTree renderTree;
+      renderTree = await driver.getRenderTree();
+
+      // This seems like a horrible way to test this, but I haven't found a better way.
+      expect(renderTree.tree.contains('TextDecoration.lineThrough'), false);
+
+      await driver.tap(item);
+
+      renderTree = await driver.getRenderTree();
+      expect(renderTree.tree.contains('TextDecoration.lineThrough'), true);
+    });
+
     test('Edit item', () async {
+      final item = find.byValueKey('item-0');
       final String itemTitle = 'item edited by test';
 
-      await driver.tap(find.byType("IconButton"));
+      await driver.scroll(item, 0.0, 0.0, Duration(milliseconds: 1000));
       await driver.tap(find.byType("TextField"));
       await driver.enterText(itemTitle);
       await driver.tap(find.byType("RaisedButton"));

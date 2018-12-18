@@ -13,30 +13,30 @@ void main() {
     expect(find.text('FlutterTodo'), findsOneWidget);
   });
 
-  testWidgets('Test new empty NewTodo Widget by checking if the title is  present and the item is null', (WidgetTester tester) async {
-    final newTodo = new NewTodo();
+  testWidgets('Test new empty NewTodo Widget by checking if the title is present and the item is null', (WidgetTester tester) async {
+    final newTodoView = new NewTodoView();
 
     await tester.pumpWidget(
-      MaterialAppTester(newTodo)
+      MaterialAppTester(newTodoView)
     );
 
     expect(find.text('New todo'), findsOneWidget);
-    expect(newTodo.item, null);
+    expect(newTodoView.item, null);
     expect(find.byType(RaisedButton), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
   });
 
   testWidgets('Test NewTodo Widget with an item by checking if the title is present, the item was loaded and set on the textfield', (WidgetTester tester) async {
     final item = new Todo(title: 'test todo');
-    final newTodo = new NewTodo(item: item,);
+    final newTodoView = new NewTodoView(item: item,);
 
     await tester.pumpWidget(
-      MaterialAppTester(newTodo)
+      MaterialAppTester(newTodoView)
     );
 
     expect(find.text('New todo'), findsOneWidget);
-    expect(newTodo.item, item);
-    expect(find.text(item.title), findsOneWidget);
+    expect(newTodoView.item, item);
+    expect(find.text('test todo'), findsOneWidget);
   });
 }
 

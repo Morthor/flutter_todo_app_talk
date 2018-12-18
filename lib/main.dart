@@ -111,10 +111,13 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   }
   
   Widget emptyList(){
-    return FadeTransition(
-      opacity: noItemsController,
-      child: Center(
-      child:  Text('No items')
+    return SizeTransition(
+      sizeFactor: noItemsController,
+      child: FadeTransition(
+        opacity: noItemsController,
+        child: Center(
+        child:  Text('No items')
+        ),
       ),
     );
   }
@@ -143,7 +146,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
 
   Widget buildItem(Todo item, index){
     return Dismissible(
-      key: Key('${item.id}'),
+      key: Key('${item.hashCode}'),
       background: Stack(
         children: <Widget>[
           Container(
@@ -176,18 +179,26 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
       ),
       onDismissed: (direction) => _removeItemFromList(item),
       direction: DismissDirection.startToEnd,
-      child: ListTile(
-        onTap: () => changeItemCompleteness(item),
-        onLongPress: () => goToEditItemView(item),
-        title: Text(
-          item.title,
-          key: Key('item-$index'),
-          style: TextStyle(
-            color: item.completed ? Colors.grey : Colors.black,
-            decoration: item.completed ? TextDecoration.lineThrough : null
-          ),
+      child: buildListTile(item, index),
+    );
+  }
+
+  Widget buildListTile(item, index){
+    return ListTile(
+      onTap: () => changeItemCompleteness(item),
+      onLongPress: () => goToEditItemView(item),
+      title: Text(
+        item.title,
+        key: Key('item-$index'),
+        style: TextStyle(
+          color: item.completed ? Colors.grey : Colors.black,
+          decoration: item.completed ? TextDecoration.lineThrough : null
         ),
-        trailing: Icon(item.completed ? Icons.check_box : Icons.check_box_outline_blank),
+      ),
+      trailing: Icon(item.completed
+        ? Icons.check_box
+        : Icons.check_box_outline_blank,
+        key: Key('completed-icon-$index'),
       ),
     );
   }
@@ -200,17 +211,17 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
 
   void goToNewItemView(){
     Navigator.of(context).push(MaterialPageRoute(builder: (context){
-      return NewTodo();
+      return NewTodoView();
     })).then((title){
       if(title != null) {
-        addItem(title);
+        addItem(Todo(title: title));
         _saveData();
       }
     });
   }
 
-  void addItem(title){
-    items.insert(0, Todo(title: title));
+  void addItem(Todo item){
+    items.insert(0, item);
     if(animatedListKey.currentState != null){
       animatedListKey.currentState.insertItem(0);
     }
@@ -218,7 +229,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
 
   void goToEditItemView(item){
     Navigator.of(context).push(MaterialPageRoute(builder: (context){
-      return NewTodo(item: item);
+      return NewTodoView(item: item);
     })).then((title){
       if(title != null) {
         editItem(item, title);

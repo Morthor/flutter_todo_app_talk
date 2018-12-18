@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:todo_app1/todo.dart';
 
-class NewTodo extends StatefulWidget {
+class NewTodoView extends StatefulWidget {
   final Todo item;
 
-  NewTodo({ this.item });
+  NewTodoView({ this.item });
 
   @override
-  _NewTodoState createState() => _NewTodoState();
+  _NewTodoViewState createState() => _NewTodoViewState();
 }
 
-class _NewTodoState extends State<NewTodo> {
+class _NewTodoViewState extends State<NewTodoView> {
   TextEditingController titleController;
 
   @override
