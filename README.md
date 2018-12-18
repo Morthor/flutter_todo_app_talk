@@ -17,7 +17,7 @@ This project is part of a talk introducing Flutter to new developers.
 - Integration tests (Automation)
 
 ### Screenshots
-![Listing Items](https://github.com/Morthor/flutter_todo_app_talk/blob/develop/screenshots/list_items.png)
-![New Item](https://github.com/Morthor/flutter_todo_app_talk/blob/develop/screenshots/nre_item.png)
-![Remove Item](https://github.com/Morthor/flutter_todo_app_talk/blob/develop/screenshots/remove_item.png)
-![Completed Item](https://github.com/Morthor/flutter_todo_app_talk/blob/develop/screenshots/list_items_completed.png)
+![Listing Items](https://github.com/Morthor/flutter_todo_app_talk/blob/develop/screenshots/list_items2.png)
+![New Item](https://github.com/Morthor/flutter_todo_app_talk/blob/develop/screenshots/new_item.png)
+![Remove Item](https://github.com/Morthor/flutter_todo_app_talk/blob/develop/screenshots/remove_item2.png)
+![Completed Item](https://github.com/Morthor/flutter_todo_app_talk/blob/develop/screenshots/list_items_completed2.png)
