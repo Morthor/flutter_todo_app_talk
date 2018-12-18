@@ -26,7 +26,7 @@ class _NewTodoViewState extends State<NewTodoView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'New todo',
+          widget.item != null ? 'Edit todo' :'New todo',
           key: Key('new-item-title'),
         ),
         centerTitle: true,
