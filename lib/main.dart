@@ -6,6 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(Main());
 
+enum ItemFilter {
+  all,
+  incomplete,
+  completed
+}
+
 class Main extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -24,59 +30,36 @@ class Home extends StatefulWidget {
   HomeState createState() => HomeState();
 }
 
-class HomeState extends State<Home> with SingleTickerProviderStateMixin{
+// To have a custom set animation, the class needs to have a TickerProvider
+class HomeState extends State<Home> with TickerProviderStateMixin{
   List<Todo> items = new List<Todo>();
+  List<Todo> filteredItems = new List<Todo>();
+
   GlobalKey<AnimatedListState> animatedListKey
     = new GlobalKey<AnimatedListState>();
-  AnimationController noItemsController;
+  AnimationController animationController;
   SharedPreferences sharedPreferences;
   bool loading = true;
+  ItemFilter filter = ItemFilter.all;
 
   @override
   void initState() {
     super.initState();
     _loadData();
-    noItemsController = new AnimationController(
+    // The AnimationController needs to be initiated inside the initState so
+    // that vsync which controls the animation can be set
+    animationController = new AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 500),
+      duration: Duration(milliseconds: 150),
     );
+    animationController.forward();
   }
 
   @override
   void dispose(){
     // Dispose of the animation to avoid leaks
-    noItemsController.dispose();
+    animationController.dispose();
     super.dispose();
-  }
-
-  _loadData() async {
-    setState(() {
-      loading = true;
-    });
-    sharedPreferences = await SharedPreferences.getInstance();
-    List<String> stringList = sharedPreferences.getStringList('data');
-    if(stringList != null && stringList.length > 0) {
-      setState(() {
-        items.addAll(stringList.map((String item) {
-          return Todo.fromMap(json.decode(item));
-        }));
-      });
-      noItemsController.reset();
-    } else {
-      noItemsController.forward();
-    }
-    setState(() {
-      loading = false;
-    });
-  }
-
-  _saveData() async {
-    sharedPreferences = await SharedPreferences.getInstance();
-    List<String> stringList = new List<String>();
-    items.forEach((Todo item){
-      stringList.add(json.encode(item.toMap()));
-    });
-    sharedPreferences.setStringList('data', stringList);
   }
 
   @override
@@ -96,14 +79,43 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
           onPressed: () =>goToNewItemView(),
         ),
       ),
-      body: renderBody()
+      body: renderBody(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      bottomNavigationBar: BottomAppBar(
+        notchMargin: 6.0,
+        shape: CircularNotchedRectangle(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            IconButton(
+              icon: Icon(Icons.format_list_bulleted),
+              color: filter == ItemFilter.all
+                ? Theme.of(context).primaryColor
+                : Colors.black,
+              onPressed: () => changeFilter(ItemFilter.all)),
+            IconButton(
+              icon: Icon(Icons.check_box),
+                color: filter == ItemFilter.completed
+                  ? Theme.of(context).primaryColor
+                  : Colors.black,
+              onPressed: () => changeFilter(ItemFilter.completed)),
+            IconButton(
+              icon: Icon(Icons.check_box_outline_blank),
+                color: filter == ItemFilter.incomplete
+                  ? Theme.of(context).primaryColor
+                  : Colors.black,
+              onPressed: () => changeFilter(ItemFilter.incomplete)),
+            SizedBox(width: 30.0,)
+          ],
+        ),
+      ),
     );
   }
 
   Widget renderBody(){
     if(loading){
       return loadingScreen();
-    }else if(items.length > 0){
+    }else if(filteredItems.length > 0){
       return buildListView();
     }else{
       return emptyList();
@@ -111,10 +123,12 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   }
   
   Widget emptyList(){
+    animationController.reset();
+    animationController.forward();
     return SizeTransition(
-      sizeFactor: noItemsController,
+      sizeFactor: animationController,
       child: FadeTransition(
-        opacity: noItemsController,
+        opacity: animationController,
         child: Center(
         child:  Text('No items')
         ),
@@ -129,18 +143,14 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   }
 
   Widget buildListView() {
-    return AnimatedList(
-      key: animatedListKey,
-      initialItemCount: items.length,
-      itemBuilder: (BuildContext context,int index, animation){
-        return FadeTransition(
-          opacity: animation,
-          child: SizeTransition(
-            sizeFactor: animation,
-            child: buildItem(items[index], index)
-          ),
-        );
-      },
+    return SizeTransition(
+      sizeFactor: animationController,
+      child: ListView.builder(
+        itemCount: filteredItems.length,
+        itemBuilder: (BuildContext context,int index){
+          return buildItem(filteredItems[index], index);
+        },
+      ),
     );
   }
 
@@ -250,22 +260,14 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   }
 
   void _removeItemFromList(item) {
-    animatedListKey.currentState.removeItem(
-      items.indexOf(item), (context, animation){
-        // the remove Item method on an Animated list requires a Widget to be
-        // returned, which would allows us to have an animation run. Since we
-        // are using a dismissible, no animation is needed.
-        return SizedBox();
-      }
-    );
     deleteItem(item);
     if(items.length == 0) {
       // force redraw of main view if the list is now empty
       setState(() {
-        noItemsController.forward();
+        animationController.forward();
       });
     } else{
-      noItemsController.reset();
+      animationController.reset();
     }
     _saveData();
   }
@@ -275,5 +277,66 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
     // are all uniquely identified by a hashcode. This means we just need to
     // pass our object on the remove method of the list
     items.remove(item);
+  }
+
+  void changeFilter(newFilter){
+    animationController.reverse().then((a){
+      animationController.forward();
+      setState(() {
+        filter = newFilter;
+        filteredItems = filteredList();
+      });
+    });
+
+  }
+
+  List<Todo> filteredList(){
+    switch (filter) {
+      case ItemFilter.all:
+        return items;
+        break;
+
+      case ItemFilter.completed:
+        return items.where((item) => item.completed).toList();
+        break;
+
+      case ItemFilter.incomplete:
+        return items.where((item) => !item.completed).toList();
+        break;
+
+      default:
+        return items;
+    }
+  }
+
+  _loadData() async {
+    setState(() {
+      loading = true;
+    });
+    sharedPreferences = await SharedPreferences.getInstance();
+    List<String> stringList = sharedPreferences.getStringList('data');
+    if(stringList != null && stringList.length > 0) {
+      setState(() {
+        items.addAll(stringList.map((String item) {
+          return Todo.fromMap(json.decode(item));
+        }));
+        filteredItems = items;
+      });
+      animationController.reset();
+    } else {
+      animationController.forward();
+    }
+    setState(() {
+      loading = false;
+    });
+  }
+
+  _saveData() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    List<String> stringList = new List<String>();
+    items.forEach((Todo item){
+      stringList.add(json.encode(item.toMap()));
+    });
+    sharedPreferences.setStringList('data', stringList);
   }
 }
