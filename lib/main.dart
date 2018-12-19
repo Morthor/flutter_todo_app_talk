@@ -210,6 +210,9 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   }
 
   void goToNewItemView(){
+    // Here we are pushing the new view into the Navigator stack. By using a
+    // MaterialPageRoute we get standard behaviour of a Material app, which will
+    // show a back button automatically for each platform on the left top corner
     Navigator.of(context).push(MaterialPageRoute(builder: (context){
       return NewTodoView();
     })).then((title){
@@ -221,6 +224,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   }
 
   void addItem(Todo item){
+    // Insert an item into the top of our list, on index zero
     items.insert(0, item);
     if(animatedListKey.currentState != null){
       animatedListKey.currentState.insertItem(0);
@@ -228,6 +232,9 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   }
 
   void goToEditItemView(item){
+    // We re-use the NewTodoView and push it to the Navigator stack just like
+    // before, but now we send the title of the item on the class constructor
+    // and expect a new title to be returned so that we can edit the item
     Navigator.of(context).push(MaterialPageRoute(builder: (context){
       return NewTodoView(item: item);
     })).then((title){
@@ -245,6 +252,9 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   void _removeItemFromList(item) {
     animatedListKey.currentState.removeItem(
       items.indexOf(item), (context, animation){
+        // the remove Item method on an Animated list requires a Widget to be
+        // returned, which would allows us to have an animation run. Since we
+        // are using a dismissible, no animation is needed.
         return SizedBox();
       }
     );
@@ -261,6 +271,9 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   }
 
   void deleteItem(item){
+    // We don't need to search for our item on the list because Dart objects
+    // are all uniquely identified by a hashcode. This means we just need to
+    // pass our object on the remove method of the list
     items.remove(item);
   }
 }
