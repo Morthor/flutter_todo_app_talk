@@ -50,9 +50,9 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
     // that vsync which controls the animation can be set
     animationController = new AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 150),
+      duration: Duration(milliseconds: 100),
     );
-    animationController.forward();
+//    animationController.forward();
   }
 
   @override
@@ -88,7 +88,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             IconButton(
-              icon: Icon(Icons.format_list_bulleted),
+              icon: Icon(Icons.format_align_justify),
               color: filter == ItemFilter.all
                 ? Theme.of(context).primaryColor
                 : Colors.black,
@@ -226,8 +226,9 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
     Navigator.of(context).push(MaterialPageRoute(builder: (context){
       return NewTodoView();
     })).then((title){
-      if(title != null) {
+      if(title != null && title != '') {
         addItem(Todo(title: title));
+        changeFilter(ItemFilter.all);
         _saveData();
       }
     });
@@ -248,7 +249,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
     Navigator.of(context).push(MaterialPageRoute(builder: (context){
       return NewTodoView(item: item);
     })).then((title){
-      if(title != null) {
+      if(title != null && title != '') {
         editItem(item, title);
         _saveData();
       }
@@ -261,14 +262,6 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
 
   void _removeItemFromList(item) {
     deleteItem(item);
-    if(items.length == 0) {
-      // force redraw of main view if the list is now empty
-      setState(() {
-        animationController.forward();
-      });
-    } else{
-      animationController.reset();
-    }
     _saveData();
   }
 
@@ -287,7 +280,6 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
         filteredItems = filteredList();
       });
     });
-
   }
 
   List<Todo> filteredList(){
@@ -322,10 +314,9 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
         }));
         filteredItems = items;
       });
-      animationController.reset();
-    } else {
-      animationController.forward();
+
     }
+    animationController.forward();
     setState(() {
       loading = false;
     });

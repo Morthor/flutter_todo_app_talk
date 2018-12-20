@@ -42,15 +42,18 @@ class _NewTodoViewState extends State<NewTodoView> {
               onSubmitted: (value) => submit(),
               decoration: InputDecoration(labelText: 'Title'),
             ),
-            SizedBox(height: 14.0,),
+            SizedBox(height: 20.0,),
             Hero(
               tag: 'save-button',
               child: RaisedButton(
                 color: Theme.of(context).primaryColor,
-                child: Text(
-                  'Save',
-                  style: TextStyle(
-                    color: Theme.of(context).primaryTextTheme.title.color
+                child: Container(
+                  padding: EdgeInsets.only(top: 13.0, bottom: 13.0),
+                  child: Text(
+                    'SAVE',
+                    style: TextStyle(
+                      color: Theme.of(context).primaryTextTheme.title.color,
+                    ),
                   ),
                 ),
                 elevation: 3.0,
@@ -60,6 +63,7 @@ class _NewTodoViewState extends State<NewTodoView> {
                     topRight: Radius.circular(10.0)
                   )
                 ),
+
                 onPressed: () => submit(),
               ),
             )
