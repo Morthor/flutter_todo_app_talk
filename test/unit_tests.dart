@@ -39,5 +39,26 @@ void main(){
 
       expect(homeState.items.length, 0);
     });
+
+    test('list items displayed should be different when the filter changes', (){
+      final homeState = HomeState();
+      Todo item1 = new Todo(title: 'new test todo');
+      item1.completed = true;
+      Todo item2 = new Todo(title: 'new test todo');
+
+      homeState.addItem(item1);
+      homeState.addItem(item2);
+      homeState.filteredItems = homeState.items;
+
+      expect(homeState.filteredItems.length, 2);
+
+      homeState.setFilterAndFilteredItems(ItemFilter.completed);
+      expect(homeState.filteredItems.length, 1);
+      expect(homeState.filteredItems[0].completed, true);
+
+      homeState.setFilterAndFilteredItems(ItemFilter.incomplete);
+      expect(homeState.filteredItems.length, 1);
+      expect(homeState.filteredItems[0].completed, false);
+    });
   });
 }

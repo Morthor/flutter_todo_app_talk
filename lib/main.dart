@@ -89,21 +89,24 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
           children: <Widget>[
             IconButton(
               icon: Icon(Icons.format_align_justify),
+              key: Key('item-filter-all'),
               color: filter == ItemFilter.all
                 ? Theme.of(context).primaryColor
                 : Colors.black,
               onPressed: () => changeFilter(ItemFilter.all)),
             IconButton(
               icon: Icon(Icons.check_box),
-                color: filter == ItemFilter.completed
-                  ? Theme.of(context).primaryColor
-                  : Colors.black,
+              key: Key('item-filter-completed'),
+              color: filter == ItemFilter.completed
+                ? Theme.of(context).primaryColor
+                : Colors.black,
               onPressed: () => changeFilter(ItemFilter.completed)),
             IconButton(
               icon: Icon(Icons.check_box_outline_blank),
-                color: filter == ItemFilter.incomplete
-                  ? Theme.of(context).primaryColor
-                  : Colors.black,
+              key: Key('item-filter-incomplete'),
+              color: filter == ItemFilter.incomplete
+                ? Theme.of(context).primaryColor
+                : Colors.black,
               onPressed: () => changeFilter(ItemFilter.incomplete)),
             SizedBox(width: 30.0,)
           ],
@@ -123,15 +126,10 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
   }
   
   Widget emptyList(){
-    animationController.reset();
-    animationController.forward();
-    return SizeTransition(
-      sizeFactor: animationController,
-      child: FadeTransition(
-        opacity: animationController,
-        child: Center(
-        child:  Text('No items')
-        ),
+    return FadeTransition(
+      opacity: animationController,
+      child: Center(
+      child:  Text('No items')
       ),
     );
   }
@@ -143,13 +141,16 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
   }
 
   Widget buildListView() {
-    return SizeTransition(
-      sizeFactor: animationController,
-      child: ListView.builder(
-        itemCount: filteredItems.length,
-        itemBuilder: (BuildContext context,int index){
-          return buildItem(filteredItems[index], index);
-        },
+    return FadeTransition(
+      opacity: animationController,
+      child: SizeTransition(
+        sizeFactor: animationController,
+        child: ListView.builder(
+          itemCount: filteredItems.length,
+          itemBuilder: (BuildContext context,int index){
+            return buildItem(filteredItems[index], index);
+          },
+        ),
       ),
     );
   }
@@ -228,7 +229,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
     })).then((title){
       if(title != null && title != '') {
         addItem(Todo(title: title));
-        changeFilter(ItemFilter.all);
+        filteredItems = filteredList();
         _saveData();
       }
     });
@@ -237,9 +238,6 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
   void addItem(Todo item){
     // Insert an item into the top of our list, on index zero
     items.insert(0, item);
-    if(animatedListKey.currentState != null){
-      animatedListKey.currentState.insertItem(0);
-    }
   }
 
   void goToEditItemView(item){
@@ -262,6 +260,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
 
   void _removeItemFromList(item) {
     deleteItem(item);
+    if(items.length == 0) setState(() {});
     _saveData();
   }
 
@@ -273,13 +272,19 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
   }
 
   void changeFilter(newFilter){
-    animationController.reverse().then((a){
-      animationController.forward();
-      setState(() {
-        filter = newFilter;
-        filteredItems = filteredList();
+    if(newFilter != filter) {
+      animationController.reverse().then((a) {
+        animationController.forward();
+        setState(() {
+          setFilterAndFilteredItems(newFilter);
+        });
       });
-    });
+    }
+  }
+
+  void setFilterAndFilteredItems(newFilter){
+    filter = newFilter;
+    filteredItems = filteredList();
   }
 
   List<Todo> filteredList(){
