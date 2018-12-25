@@ -26,7 +26,7 @@ class _NewTodoViewState extends State<NewTodoView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.item != null ? 'Edit todo' :'New todo',
+          widget.item != null ? 'Edit todo' : 'New todo',
           key: Key('new-item-title'),
         ),
         centerTitle: true,
@@ -43,25 +43,22 @@ class _NewTodoViewState extends State<NewTodoView> {
               decoration: InputDecoration(labelText: 'Title'),
             ),
             SizedBox(height: 14.0,),
-            Hero(
-              tag: 'save-button',
-              child: RaisedButton(
-                color: Theme.of(context).primaryColor,
-                child: Text(
-                  'Save',
-                  style: TextStyle(
-                    color: Theme.of(context).primaryTextTheme.title.color
-                  ),
+            RaisedButton(
+              color: Theme.of(context).primaryColor,
+              child: Text(
+                'Save',
+                style: TextStyle(
+                  color: Theme.of(context).primaryTextTheme.title.color
                 ),
-                elevation: 3.0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(10.0),
-                    topRight: Radius.circular(10.0)
-                  )
-                ),
-                onPressed: () => submit(),
               ),
+              elevation: 3.0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(10.0),
+                  topRight: Radius.circular(10.0)
+                )
+              ),
+              onPressed: () => submit(),
             )
           ],
         ),
