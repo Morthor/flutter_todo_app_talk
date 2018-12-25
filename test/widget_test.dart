@@ -34,7 +34,7 @@ void main() {
       MaterialAppTester(newTodoView)
     );
 
-    expect(find.text('New todo'), findsOneWidget);
+    expect(find.text('Edit todo'), findsOneWidget);
     expect(newTodoView.item, item);
     expect(find.text('test todo'), findsOneWidget);
   });

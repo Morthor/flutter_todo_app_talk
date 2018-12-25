@@ -26,58 +26,6 @@ class Home extends StatefulWidget {
 
 class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   List<Todo> items = new List<Todo>();
-  GlobalKey<AnimatedListState> animatedListKey
-    = new GlobalKey<AnimatedListState>();
-  AnimationController noItemsController;
-  SharedPreferences sharedPreferences;
-  bool loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-    noItemsController = new AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 500),
-    );
-  }
-
-  @override
-  void dispose(){
-    // Dispose of the animation to avoid leaks
-    noItemsController.dispose();
-    super.dispose();
-  }
-
-  _loadData() async {
-    setState(() {
-      loading = true;
-    });
-    sharedPreferences = await SharedPreferences.getInstance();
-    List<String> stringList = sharedPreferences.getStringList('data');
-    if(stringList != null && stringList.length > 0) {
-      setState(() {
-        items.addAll(stringList.map((String item) {
-          return Todo.fromMap(json.decode(item));
-        }));
-      });
-      noItemsController.reset();
-    } else {
-      noItemsController.forward();
-    }
-    setState(() {
-      loading = false;
-    });
-  }
-
-  _saveData() async {
-    sharedPreferences = await SharedPreferences.getInstance();
-    List<String> stringList = new List<String>();
-    items.forEach((Todo item){
-      stringList.add(json.encode(item.toMap()));
-    });
-    sharedPreferences.setStringList('data', stringList);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,21 +37,16 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
         ),
         centerTitle: true,
       ),
-      floatingActionButton: Hero(
-        tag: 'save-button',
-        child: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () =>goToNewItemView(),
-        ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () =>goToNewItemView(),
       ),
       body: renderBody()
     );
   }
 
   Widget renderBody(){
-    if(loading){
-      return loadingScreen();
-    }else if(items.length > 0){
+    if(items.length > 0){
       return buildListView();
     }else{
       return emptyList();
@@ -111,35 +54,17 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   }
   
   Widget emptyList(){
-    return SizeTransition(
-      sizeFactor: noItemsController,
-      child: FadeTransition(
-        opacity: noItemsController,
-        child: Center(
-        child:  Text('No items')
-        ),
-      ),
+    return Center(
+    child:  Text('No items')
     );
   }
 
-  Widget loadingScreen(){
-    return Center(
-      child: CircularProgressIndicator(),
-    );
-  }
 
   Widget buildListView() {
-    return AnimatedList(
-      key: animatedListKey,
-      initialItemCount: items.length,
-      itemBuilder: (BuildContext context,int index, animation){
-        return FadeTransition(
-          opacity: animation,
-          child: SizeTransition(
-            sizeFactor: animation,
-            child: buildItem(items[index], index)
-          ),
-        );
+    return ListView.builder(
+      itemCount: items.length,
+      itemBuilder: (BuildContext context,int index){
+        return buildItem(items[index], index);
       },
     );
   }
@@ -147,36 +72,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   Widget buildItem(Todo item, index){
     return Dismissible(
       key: Key('${item.hashCode}'),
-      background: Stack(
-        children: <Widget>[
-          Container(
-            alignment: Alignment.centerLeft,
-            decoration: BoxDecoration(
-              color: Colors.red,
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.red.withAlpha(50),
-                  width: 1.0
-                )
-              )
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: Icon(Icons.delete, color: Colors.white,),
-            ),
-          ),
-          Container(
-            height: 1.0,
-            decoration: BoxDecoration(
-              boxShadow: [BoxShadow(
-                color: Colors.black,
-                blurRadius: 8.0,
-                spreadRadius: 1.0
-              ),]
-            ),
-          ),
-        ],
-      ),
+      background: Container(color: Colors.red[700]),
       onDismissed: (direction) => _removeItemFromList(item),
       direction: DismissDirection.startToEnd,
       child: buildListTile(item, index),
@@ -218,7 +114,6 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
     })).then((title){
       if(title != null) {
         addItem(Todo(title: title));
-        _saveData();
       }
     });
   }
@@ -226,9 +121,6 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   void addItem(Todo item){
     // Insert an item into the top of our list, on index zero
     items.insert(0, item);
-    if(animatedListKey.currentState != null){
-      animatedListKey.currentState.insertItem(0);
-    }
   }
 
   void goToEditItemView(item){
@@ -240,7 +132,6 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
     })).then((title){
       if(title != null) {
         editItem(item, title);
-        _saveData();
       }
     });
   }
@@ -250,24 +141,7 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
   }
 
   void _removeItemFromList(item) {
-    animatedListKey.currentState.removeItem(
-      items.indexOf(item), (context, animation){
-        // the remove Item method on an Animated list requires a Widget to be
-        // returned, which would allows us to have an animation run. Since we
-        // are using a dismissible, no animation is needed.
-        return SizedBox();
-      }
-    );
     deleteItem(item);
-    if(items.length == 0) {
-      // force redraw of main view if the list is now empty
-      setState(() {
-        noItemsController.forward();
-      });
-    } else{
-      noItemsController.reset();
-    }
-    _saveData();
   }
 
   void deleteItem(item){
