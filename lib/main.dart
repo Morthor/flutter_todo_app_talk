@@ -25,7 +25,19 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> with SingleTickerProviderStateMixin{
-  List<Todo> items = new List<Todo>();
+  List<Todo> list = new List<Todo>();
+  SharedPreferences sharedPreferences;
+
+  @override
+  void initState() {
+    loadSharedPreferencesAndData();
+    super.initState();
+  }
+
+  void loadSharedPreferencesAndData() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    loadData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,30 +53,21 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
         child: Icon(Icons.add),
         onPressed: () =>goToNewItemView(),
       ),
-      body: renderBody()
+      body: list.isEmpty ? emptyList() : buildListView()
     );
   }
 
-  Widget renderBody(){
-    if(items.length > 0){
-      return buildListView();
-    }else{
-      return emptyList();
-    }
-  }
-  
   Widget emptyList(){
     return Center(
     child:  Text('No items')
     );
   }
 
-
   Widget buildListView() {
     return ListView.builder(
-      itemCount: items.length,
+      itemCount: list.length,
       itemBuilder: (BuildContext context,int index){
-        return buildItem(items[index], index);
+        return buildItem(list[index], index);
       },
     );
   }
@@ -73,13 +76,14 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
     return Dismissible(
       key: Key('${item.hashCode}'),
       background: Container(color: Colors.red[700]),
-      onDismissed: (direction) => _removeItemFromList(item),
+      onDismissed: (direction) => removeItem(item),
       direction: DismissDirection.startToEnd,
       child: buildListTile(item, index),
     );
   }
 
-  Widget buildListTile(item, index){
+  Widget buildListTile(Todo item, int index){
+    print(item.completed);
     return ListTile(
       onTap: () => changeItemCompleteness(item),
       onLongPress: () => goToEditItemView(item),
@@ -99,12 +103,6 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
     );
   }
 
-  void changeItemCompleteness(Todo item){
-    setState(() {
-      item.completed = !item.completed;
-    });
-  }
-
   void goToNewItemView(){
     // Here we are pushing the new view into the Navigator stack. By using a
     // MaterialPageRoute we get standard behaviour of a Material app, which will
@@ -120,7 +118,15 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
 
   void addItem(Todo item){
     // Insert an item into the top of our list, on index zero
-    items.insert(0, item);
+    list.insert(0, item);
+    saveData();
+  }
+
+  void changeItemCompleteness(Todo item){
+    setState(() {
+      item.completed = !item.completed;
+    });
+    saveData();
   }
 
   void goToEditItemView(item){
@@ -138,16 +144,28 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
 
   void editItem(Todo item ,String title){
     item.title = title;
+    saveData();
   }
 
-  void _removeItemFromList(item) {
-    deleteItem(item);
+  void removeItem(Todo item){
+    list.remove(item);
+    saveData();
   }
 
-  void deleteItem(item){
-    // We don't need to search for our item on the list because Dart objects
-    // are all uniquely identified by a hashcode. This means we just need to
-    // pass our object on the remove method of the list
-    items.remove(item);
+  void loadData() {
+    List<String> listString = sharedPreferences.getStringList('list');
+    if(listString != null){
+      list = listString.map(
+        (item) => Todo.fromMap(json.decode(item))
+      ).toList();
+      setState((){});
+    }
+  }
+
+  void saveData(){
+    List<String> stringList = list.map(
+      (item) => json.encode(item.toMap()
+    )).toList();
+    sharedPreferences.setStringList('list', stringList);
   }
 }

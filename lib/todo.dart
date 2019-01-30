@@ -1,4 +1,4 @@
-class Todo{
+class Todo {
   String title;
   bool completed;
 
@@ -7,18 +7,14 @@ class Todo{
     this.completed = false,
   });
 
-  Todo.fromMap(Map<String, dynamic> map) :
-    title = map['title'],
-    completed = map['completed'];
-
-  updateTitle(title){
-    this.title = title;
-  }
+  Todo.fromMap(Map map) :
+    this.title = map['title'],
+    this.completed = map['completed'];
 
   Map toMap(){
     return {
-      'title': title,
-      'completed': completed,
+      'title': this.title,
+      'completed': this.completed,
     };
   }
 }
