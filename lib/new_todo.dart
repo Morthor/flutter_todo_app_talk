@@ -39,7 +39,7 @@ class _NewTodoViewState extends State<NewTodoView> {
             TextField(
               controller: titleController,
               autofocus: true,
-              onSubmitted: (value) => submit(),
+              onEditingComplete: submit,
               decoration: InputDecoration(labelText: 'Title'),
             ),
             SizedBox(height: 14.0,),
