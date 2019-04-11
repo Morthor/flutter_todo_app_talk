@@ -31,6 +31,7 @@ class _NewTodoViewState extends State<NewTodoView> {
         ),
         centerTitle: true,
       ),
+      resizeToAvoidBottomPadding: true,
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(

@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_app1/new_todo.dart';
 import 'package:todo_app1/todo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() => runApp(Main());
 
@@ -16,8 +18,9 @@ class Main extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'FlutterTodo',
+      title: 'My Todos',
       home: Home(),
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.orange,
       ),
@@ -41,11 +44,16 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
   SharedPreferences sharedPreferences;
   bool loading = true;
   ItemFilter filter = ItemFilter.all;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  Firestore _firebaseInstance = Firestore.instance;
+  String firestoreDocumentId;
+  bool savingToFirestore = false;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _loadFromFirestore();
     // The AnimationController needs to be initiated inside the initState so
     // that vsync which controls the animation can be set
     animationController = new AnimationController(
@@ -67,17 +75,20 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'FlutterTodo',
+          'My Todos',
           key: Key('main-app-title'),
         ),
         centerTitle: true,
+        actions: <Widget>[
+          FlatButton(
+            child: buildCloudIcon(),
+            onPressed: _cloudToggle
+          )
+        ],
       ),
-      floatingActionButton: Hero(
-        tag: 'save-button',
-        child: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () =>goToNewItemView(),
-        ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () =>goToNewItemView(),
       ),
       body: renderBody(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
@@ -250,6 +261,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
       if(title != null && title != '') {
         editItem(item, title);
         _saveData();
+        _saveToFirestore();
       }
     });
   }
@@ -262,6 +274,8 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
     deleteItem(item);
     if(items.length == 0) setState(() {});
     _saveData();
+    _saveToFirestore();
+
   }
 
   void deleteItem(item){
@@ -327,6 +341,24 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
     });
   }
 
+  _loadFromFirestore() async {
+    await loginToFirebase();
+    setState(() {
+      loading = true;
+    });
+    if(firestoreDocumentId == null) await _getFirestoreDocumentId();
+
+    _firebaseInstance.collection('todos').document(firestoreDocumentId).get().then((documentSnapshot){
+      documentSnapshot['list'].forEach((item) {
+        items.add(Todo.fromMap(item));
+      });
+    });
+    animationController.forward();
+    setState(() {
+      loading = false;
+    });
+  }
+
   _saveData() async {
     sharedPreferences = await SharedPreferences.getInstance();
     List<String> stringList = new List<String>();
@@ -334,5 +366,63 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
       stringList.add(json.encode(item.toMap()));
     });
     sharedPreferences.setStringList('data', stringList);
+  }
+
+  _saveToFirestore() async {
+    await loginToFirebase();
+    if(firestoreDocumentId == null) await _getFirestoreDocumentId();
+    List<Map> itemsMapList = new List<Map>();
+    items.forEach((item){
+      itemsMapList.add(item.toMap());
+    });
+
+    _firebaseInstance.collection('todos').document(firestoreDocumentId).setData({'list': itemsMapList});
+  }
+
+  _getFirestoreDocumentId() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    String spFirestoreDocumentId = sharedPreferences.get('fireStoreDocumentId');
+    setState(() {
+      if(spFirestoreDocumentId != null) {
+        firestoreDocumentId = spFirestoreDocumentId;
+      }else{
+        firestoreDocumentId = _firebaseInstance.collection('todos').document().documentID;
+        sharedPreferences.setString('fireStoreDocumentId', firestoreDocumentId);
+      }
+    });
+  }
+
+  _cloudToggle(){
+    if(firestoreDocumentId == null){
+      _getFirestoreDocumentId();
+    }else{
+      logoutOfFirebase();
+      setState(() {
+        firestoreDocumentId = null;
+      });
+    }
+  }
+
+  Widget buildCloudIcon(){
+    if(savingToFirestore){
+      return CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(
+          Theme.of(context).textTheme.title.color
+        )
+      );
+    }
+    if(firestoreDocumentId == null){
+      return Icon(Icons.cloud_off);
+    }else{
+      return Icon(Icons.cloud_done);
+    }
+  }
+
+  Future<void> loginToFirebase() async {
+    if(_auth.currentUser() == null) await _auth.signInAnonymously();
+  }
+
+  Future<void> logoutOfFirebase() async {
+    if(_auth.currentUser() != null) await _auth.signOut();
   }
 }

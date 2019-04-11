@@ -1,4 +1,4 @@
-package com.example.todoapp1;
+package com.morthor.my_todos;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;
