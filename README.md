@@ -1,3 +1,5 @@
+*Updated to AndroidX and Flutter 1.17.5*
+---
 # A Flutter "Todo" App
 
 This project is part of a talk introducing Flutter to new developers.
