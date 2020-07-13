@@ -113,7 +113,9 @@ class HomeState extends State<Home> with SingleTickerProviderStateMixin{
       return NewTodoView();
     })).then((title){
       if(title != null) {
-        addItem(Todo(title: title));
+        setState(() {
+          addItem(Todo(title: title));
+        });
       }
     });
   }
