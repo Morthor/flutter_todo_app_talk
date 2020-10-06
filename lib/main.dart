@@ -72,13 +72,15 @@ class HomeState extends State<Home> with TickerProviderStateMixin{
         ),
         centerTitle: true,
       ),
-      floatingActionButton: Hero(
-        tag: 'save-button',
-        child: FloatingActionButton(
+      floatingActionButton:
+//        Hero(
+//        tag: 'save-button',
+//        child:
+        FloatingActionButton(
           child: Icon(Icons.add),
           onPressed: () =>goToNewItemView(),
         ),
-      ),
+//      ),
       body: renderBody(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       bottomNavigationBar: BottomAppBar(
