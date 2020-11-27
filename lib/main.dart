@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:todo_app1/new_todo.dart';
-import 'package:todo_app1/todo.dart';
+import 'package:todo_app_embbedv2/new_todo.dart';
+import 'package:todo_app_embbedv2/todo.dart';
 
 void main() => runApp(Main());
 
@@ -35,6 +35,12 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
     );
     emptyListController.forward();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    emptyListController.dispose();
+    super.dispose();
   }
 
   @override
@@ -172,9 +178,11 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
     // pass our object on the remove method of the list
     items.remove(item);
     if(items.isEmpty) {
-      emptyListController.reset();
-      setState(() {});
-      emptyListController.forward();
+      if(emptyListController != null) {
+        emptyListController.reset();
+        setState(() {});
+        emptyListController.forward();
+      }
     }
   }
 }
