@@ -1,5 +1,7 @@
 # A Flutter "Todo" App
 
+[![Codemagic build status](https://api.codemagic.io/apps/5fc13817f7698e0013fc6e22/5fc13817f7698e0013fc6e21/status_badge.svg)](https://codemagic.io/apps/5fc13817f7698e0013fc6e22/5fc13817f7698e0013fc6e21/latest_build)
+
 This project is part of a talk introducing Flutter to new developers.
 
 Are you new to Flutter? Start [here](https://flutter.io/) !
