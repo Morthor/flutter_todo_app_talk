@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:todo_app1/new_todo.dart';
-import 'package:todo_app1/main.dart';
-import 'package:todo_app1/todo.dart';
+import 'package:todo_app_embbedv2/new_todo.dart';
+import 'package:todo_app_embbedv2/main.dart';
+import 'package:todo_app_embbedv2/todo.dart';
 
 void main() {
   testWidgets('Test Home Widget by checking if the title is present on app start', (WidgetTester tester) async {

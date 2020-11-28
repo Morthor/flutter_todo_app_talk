@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:todo_app1/todo.dart';
+import 'package:todo_app_embbedv2/todo.dart';
 
 class NewTodoView extends StatefulWidget {
   final Todo item;
@@ -39,7 +39,7 @@ class _NewTodoViewState extends State<NewTodoView> {
             TextField(
               controller: titleController,
               autofocus: true,
-              onSubmitted: (value) => submit(),
+              onEditingComplete: submit,
               decoration: InputDecoration(labelText: 'Title'),
             ),
             SizedBox(height: 14.0,),
