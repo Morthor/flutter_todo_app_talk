@@ -135,7 +135,9 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
       return NewTodoView();
     })).then((title){
       if(title != null) {
-        addItem(Todo(title: title));
+        setState(() {
+          addItem(Todo(title: title));
+        });
       }
     });
   }
