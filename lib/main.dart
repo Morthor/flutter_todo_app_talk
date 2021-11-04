@@ -61,6 +61,9 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
     );
   }
 
+  // You should create these Widgets as Stateless Widgets instead of these
+  // methods. But since the video was made with this code, I will keep it here.
+
   Widget renderBody(){
     if(items.length > 0){
       return buildListView();
