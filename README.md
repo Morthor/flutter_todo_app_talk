@@ -1,4 +1,5 @@
-*Updated to AndroidX and Flutter 1.17.5*
+*Updated to Flutter 2.5.3 with null-safety*
+*Refactored all tests to new Flutter testing tools*
 ---
 # A Flutter "Todo" App
 
