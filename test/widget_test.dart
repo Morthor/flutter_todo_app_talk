@@ -14,7 +14,7 @@ void main() {
   });
 
   testWidgets('Test new empty NewTodo Widget by checking if the title is present and the item is null', (WidgetTester tester) async {
-    final newTodoView = new NewTodoView();
+    final newTodoView = new NewTodoView(item: Todo(title: ''),);
 
     await tester.pumpWidget(
       MaterialAppTester(newTodoView)
@@ -22,7 +22,7 @@ void main() {
 
     expect(find.text('New todo'), findsOneWidget);
     expect(newTodoView.item, null);
-    expect(find.byType(RaisedButton), findsOneWidget);
+    expect(find.byType(ElevatedButton), findsOneWidget);
     expect(find.byType(TextField), findsOneWidget);
   });
 

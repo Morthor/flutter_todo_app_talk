@@ -3,7 +3,7 @@ class Todo{
   bool completed;
 
   Todo({
-    this.title,
+    required this.title,
     this.completed = false,
   });
 

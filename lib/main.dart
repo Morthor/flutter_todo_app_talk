@@ -23,9 +23,9 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> with TickerProviderStateMixin {
-  List<Todo> items = new List<Todo>();
+  List<Todo> items = new List<Todo>.empty(growable: true);
   GlobalKey<AnimatedListState> animatedListKey = GlobalKey<AnimatedListState>();
-  AnimationController emptyListController;
+  late AnimationController emptyListController;
 
   @override
   void initState() {
@@ -105,14 +105,14 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
     return ListTile(
       onTap: () => changeItemCompleteness(item),
       onLongPress: () => goToEditItemView(item),
-      title: Text(
-        item.title,
+      title: Text(item.title,
         key: Key('item-$index'),
         style: TextStyle(
           color: item.completed ? Colors.grey : Colors.black,
           decoration: item.completed ? TextDecoration.lineThrough : null
         ),
       ),
+
       trailing: Icon(item.completed
         ? Icons.check_box
         : Icons.check_box_outline_blank,
@@ -132,7 +132,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
     // MaterialPageRoute we get standard behaviour of a Material app, which will
     // show a back button automatically for each platform on the left top corner
     Navigator.of(context).push(MaterialPageRoute(builder: (context){
-      return NewTodoView();
+      return NewTodoView(item: Todo(title: ''),);
     })).then((title){
       if(title != null) {
         setState(() {
@@ -146,7 +146,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
     // Insert an item into the top of our list, on index zero
     items.insert(0, item);
     if(animatedListKey.currentState != null)
-      animatedListKey.currentState.insertItem(0);
+      animatedListKey.currentState!.insertItem(0);
   }
 
   void goToEditItemView(Todo item){
@@ -167,7 +167,7 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
   }
 
   void removeItemFromList(Todo item, int index) {
-    animatedListKey.currentState.removeItem(index, (context, animation){
+    animatedListKey.currentState!.removeItem(index, (context, animation){
       return SizedBox(width: 0, height: 0,);
     });
     deleteItem(item);
@@ -180,11 +180,9 @@ class HomeState extends State<Home> with TickerProviderStateMixin {
     // pass our object on the remove method of the list
     items.remove(item);
     if(items.isEmpty) {
-      if(emptyListController != null) {
-        emptyListController.reset();
-        setState(() {});
-        emptyListController.forward();
-      }
+      emptyListController.reset();
+      setState(() {});
+      emptyListController.forward();
     }
   }
 }

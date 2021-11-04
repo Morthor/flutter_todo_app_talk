@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:todo_app_embbedv2/todo.dart';
+import 'todo.dart';
 
 class NewTodoView extends StatefulWidget {
   final Todo item;
 
-  NewTodoView({ this.item });
+  NewTodoView({ required this.item });
 
   @override
   _NewTodoViewState createState() => _NewTodoViewState();
 }
 
 class _NewTodoViewState extends State<NewTodoView> {
-  TextEditingController titleController;
+  late TextEditingController titleController;
 
   @override
   void initState() {
     super.initState();
     titleController = new TextEditingController(
-      text: widget.item != null ? widget.item.title : null
+      text: widget.item.title
     );
   }
 
@@ -26,7 +26,7 @@ class _NewTodoViewState extends State<NewTodoView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.item != null ? 'Edit todo' : 'New todo',
+          widget.item.title != '' ? 'Edit todo' : 'New todo',
           key: Key('new-item-title'),
         ),
         centerTitle: true,
@@ -43,23 +43,23 @@ class _NewTodoViewState extends State<NewTodoView> {
               decoration: InputDecoration(labelText: 'Title'),
             ),
             SizedBox(height: 14.0,),
-            RaisedButton(
-              color: Theme.of(context).primaryColor,
+            ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                  Theme.of(context).primaryColor,
+                ),
+                overlayColor: MaterialStateProperty.all<Color>(
+                  Theme.of(context).backgroundColor,
+                ),
+              ),
               child: Text(
                 'Save',
                 style: TextStyle(
-                  color: Theme.of(context).primaryTextTheme.title.color
+                  color: Colors.black,
                 ),
               ),
-              elevation: 3.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(10.0),
-                  topRight: Radius.circular(10.0)
-                )
-              ),
-              onPressed: () => submit(),
-            )
+              onPressed: submit,
+            ),
           ],
         ),
       ),
@@ -67,6 +67,7 @@ class _NewTodoViewState extends State<NewTodoView> {
   }
 
   void submit(){
-    Navigator.of(context).pop(titleController.text);
+    if(titleController.text != '')
+      Navigator.of(context).pop(titleController.text);
   }
 }
